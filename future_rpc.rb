@@ -11,6 +11,7 @@ class Future
 
   def initialize &blk
     @f = Fiber.new {
+
       @d = blk.call
       if @d.kind_of? EM::DefaultDeferrable
         @d.callback { |val|
@@ -19,11 +20,13 @@ class Future
         @d.errback { |val|
          @f.resume val
         }
+
       else
         @result = d
       end
       @result = Fiber.yield
-    }.resume
+    }
+    @f.resume
     self
   end
 
@@ -58,26 +61,19 @@ end
 EventMachine.run {
   start_time = Time.now
   
-  EM.next_tick {
-    # Need to wrap this in a fiber so I can block the whole thing 
-    # in case the value of a future is demanded.
-    f = Fiber.new {
-      start = Time.now
-      one = Future.new { rpc(1) }
-      two = Future.new { rpc(2) }
+  # Need to wrap this in a fiber so I can block the whole thing 
+  # in case the value of a future is demanded.
+  Fiber.new {
+    start = Time.now
+    one = Future.new { rpc(1) }
+    two = Future.new { rpc(2) }
 
-      puts "at #{Time.now - start}, about to use futures"
-      result = one + two
-      puts "finished with futures at #{Time.now - start}"
-      puts result
-    }
-    
-    EM.next_tick {
-      f.resume
-    }
-    
-  }
-
+    puts "at #{Time.now - start}, about to use futures"
+    result = one + two
+    puts "finished with futures at #{Time.now - start}"
+    puts result
+  }.resume
+  
   # ensure we eventually do quit
   EventMachine.add_timer(5) {
     puts "Total Runtime: #{Time.now - start_time}"
