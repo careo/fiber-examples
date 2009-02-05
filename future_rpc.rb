@@ -10,33 +10,20 @@ class Future
 
 
   def initialize &blk
-    @status = :pending
     @f = Fiber.new {
-
       @d = blk.call
       if @d.kind_of? EM::DefaultDeferrable
         @d.callback { |val|
-         puts "the future has come! val=#{val}"
-         @status = :done
          @f.resume val
         }
         @d.errback { |val|
-         puts "the future is dead"
-         @status = :dead
          @f.resume val
         }
-
       else
-        "the future was always the present? that's deep dude."
         @result = d
       end
       @result = Fiber.yield
-    }
-    
-    puts "running fiber"
-    @f.resume
-
-    
+    }.resume
     self
   end
 
@@ -75,7 +62,6 @@ EventMachine.run {
     # Need to wrap this in a fiber so I can block the whole thing 
     # in case the value of a future is demanded.
     f = Fiber.new {
-      puts "start future calc"
       start = Time.now
       one = Future.new { rpc(1) }
       two = Future.new { rpc(2) }
