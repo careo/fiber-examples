@@ -1,6 +1,5 @@
-require 'rubygems'
-require 'eventmachine'
-  
+require 'require_me'
+
 def rpc val, &blk
   d = EventMachine::DefaultDeferrable.new
   d.callback { 
