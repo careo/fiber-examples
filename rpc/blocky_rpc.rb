@@ -1,3 +1,4 @@
+$:.unshift "#{File.dirname(__FILE__)}/../"
 require 'require_me'
 
 def rpc val, &blk
