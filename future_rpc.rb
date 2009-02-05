@@ -5,9 +5,6 @@ class Future
   alias __class__ class
   alias __send__ send
   instance_methods.each { |m| undef_method m unless m =~ /^__/ }
-  alias class __class__
-  alias send  __send__ 
-
 
   def initialize &blk
     @f = Fiber.new {
